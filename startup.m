@@ -57,7 +57,6 @@ ctrl.R= diag([0.01;0.01]); % Input penalty
 ctrl.solver= ctrl_prob_setup(ctrl.sys,ctrl); % OSQP solver setup
 
 %% Viz Setup - For simulation graphics visualization
-
 viz.w= sys.w;
 viz.l= sys.r_w*2+0.02;
 viz.marker_h= viz.l;
@@ -72,10 +71,8 @@ viz.rob_circ_y= (sys.w/2+0.01)*sin(viz.ang);
 
 
 %% Run Simulation
-
 main;
 
 %% Run Visualization
 sim_viz(pl,sim,viz,pos_fbk_vec,pl_rec);
-
 plot(t,ctrl_ref);
