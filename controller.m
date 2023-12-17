@@ -1,7 +1,7 @@
 function [tau_l,tau_r,prediction] = controller(ctrl,sys,reference,feedback)
 % This function updates the conic problem setup by OSQP and computes inputs
 
-            %% Trasnforming measurement to controller states
+            %% Transforming measurement to controller states
             % Plant States -> X Y psi V psiDot theta thetaDot
             % Controller States -> X_L,X_R, theta, thetaDot
             x0= [feedback(4)+(sys.w/2)*feedback(5); ...
@@ -10,7 +10,7 @@ function [tau_l,tau_r,prediction] = controller(ctrl,sys,reference,feedback)
                  feedback(7)];
             
             %% State part of the objective function
-            q_new = [reshape((ctrl.Q*reference),ctrl.N+1,1); zeros(ctrl.N*ctrl.nu, 1)];
+            q_new = [reshape((ctrl.Q*reference),ctrl.nx*(ctrl.N+1),1); zeros(ctrl.N*ctrl.nu, 1)];
             
             %% Equality constraints
             leq = [-x0; zeros(ctrl.N*ctrl.nx, 1)];
@@ -19,8 +19,8 @@ function [tau_l,tau_r,prediction] = controller(ctrl,sys,reference,feedback)
             %% Inequality constraints -> input and state constraints
             lineq = [repmat(ctrl.x_min, ctrl.N+1, 1); repmat(ctrl.tau_min*ones(ctrl.nu,1), ctrl.N, 1)];
             uineq = [repmat(ctrl.x_max, ctrl.N+1, 1); repmat(ctrl.tau_max*ones(ctrl.nu,1), ctrl.N, 1)];
-            % - OSQP constraints
             
+            % - OSQP constraints
             l_new = [leq; lineq];
             u_new = [ueq; uineq];
 

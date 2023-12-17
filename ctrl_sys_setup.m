@@ -14,7 +14,7 @@ function [ctrl_sys] = ctrl_sys_setup(sys,ctrl)
     p1= (-p02*Me)/(p04-p01*Me);
     p2= p03/(sys.r_w*p04-Me*sys.r_w*p01);
     p3= (-p04*sys.g)/(Me*p01-p04);
-    p4= p04/(Me*sys.r_w*p01-p04*sys.r_w);
+    p4= p01/(Me*sys.r_w*p01-p04*sys.r_w);
     p5= (sys.w*sys.w*sys.r_w)/ ...
         ((2*sys.j_psi*sys.r_w*sys.r_w)+ ...
         ((sys.j_w+sys.r_w*sys.r_w*sys.m_w)*sys.w*sys.w));
