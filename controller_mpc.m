@@ -1,4 +1,4 @@
-function [tau_l,tau_r,prediction] = controller(ctrl,sys,reference,feedback)
+function [tau_l,tau_r,prediction] = controller_mpc(ctrl,sys,reference,feedback)
 % This function updates the conic problem setup by OSQP and computes inputs
 
             %% Transforming measurement to controller states

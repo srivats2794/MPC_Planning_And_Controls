@@ -1,4 +1,4 @@
-function [ctrl_sys] = ctrl_sys_setup(sys,ctrl)
+function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
 % This function computes the A and B matrix for the control design
 
     %% Predefining some repeated cluster terms
@@ -45,5 +45,7 @@ function [ctrl_sys] = ctrl_sys_setup(sys,ctrl)
     sys_d= c2d(sys,ctrl.Ts);
     ctrl_sys.A= sys_d.A;
     ctrl_sys.B= sys_d.B;
+    ctrl_sys.Ac= A;
+    ctrl_sys.Bc= B;
     
 end

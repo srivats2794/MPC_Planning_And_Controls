@@ -25,6 +25,7 @@ set(gcf, 'Color', 'w');
 set(gcf,'Units','normalized','OuterPosition',[0 0 1 1]);
 
 for k = 1:length(fbk)
+     
     subplot(1,2,1)
     plot(viz.map_x,viz.map_y,'-k','LineWidth',3);
     hold on
@@ -40,6 +41,10 @@ for k = 1:length(fbk)
     end
     
     x01 = fbk(1,k); y01 = fbk(2,k); th01 = fbk(3,k);
+
+    if(norm(([x01;y01;th01]-sim.xf(1:3)),2) < 5e-3)
+        break;
+    end
     x_r_1 = [x_r_1 x01];
     y_r_1 = [y_r_1 y01];
     
