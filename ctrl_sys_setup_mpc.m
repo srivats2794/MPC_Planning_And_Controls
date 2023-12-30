@@ -1,4 +1,4 @@
-function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
+function [ctrl_sys] = ctrl_sys_setup_mpc(sys)
 % This function computes the A and B matrix for the control design
 
     %% Predefining some repeated cluster terms
@@ -41,11 +41,10 @@ function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
     
     %% Discretization
 
-    sys= ss(A,B,C,D);
-    sys_d= c2d(sys,ctrl.Ts);
-    ctrl_sys.A= sys_d.A;
-    ctrl_sys.B= sys_d.B;
-    ctrl_sys.Ac= A;
-    ctrl_sys.Bc= B;
+    ctrl_sys.A = A;
+    ctrl_sys.B = B;
+    ctrl_sys.C = C;
+    ctrl_sys.D = D;
     
+    %ctrl_sys.sys_d= c2d(ctrl_sys.sys_c,ctrl.Ts);    
 end

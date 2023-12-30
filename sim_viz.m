@@ -25,7 +25,7 @@ set(gcf, 'Color', 'w');
 set(gcf,'Units','normalized','OuterPosition',[0 0 1 1]);
 
 for k = 1:length(fbk)
-     
+    
     subplot(1,2,1)
     plot(viz.map_x,viz.map_y,'-k','LineWidth',3);
     hold on
