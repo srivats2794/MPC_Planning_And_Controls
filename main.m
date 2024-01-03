@@ -13,14 +13,14 @@ ctrl_ref=[];
 K= floor(sim.tsim/pl.Ts);
 main_loop = tic;
 for i=1:K
-    if(norm((fbk(1:3)-sim.xf(1:3)),2) < 0.1)
+    if(norm((fbk(1:2)-sim.xf(1:2)),2) < 0.1)
         break;
     end
-    norm((fbk(1:3)-sim.xf(1:3)),2)
+    norm((fbk(1:2)-sim.xf(1:2)),2)
     t(i) = (i-1)*pl.Ts;
 
     
-    pl_args.p   = [fbk;sim.xf(1:3)];
+    pl_args.p   = [fbk;sim.xf(1:2)];
     pl_args.x0  = [reshape(X0_pl',7*(pl.N+1),1);reshape(u0_pl',2*pl.N,1)];
     pl_sol = pl_solver('x0', pl_args.x0, 'lbx', pl_args.lbx, 'ubx', pl_args.ubx,...
         'lbg', pl_args.lbg, 'ubg', pl_args.ubg,'p',pl_args.p);
@@ -35,7 +35,12 @@ for i=1:K
 
     % Shift trajectory to initialize the next step
     X0_pl = [X0_pl(2:end,:);X0_pl(end,:)];
+    rel_t = pl.dt:pl.dt:pl.dt*(pl.N+1);
 
+    act_t= pl.Ts:pl.dt:pl.dt*(pl.N+1);
+
+    X0_pl= makima(rel_t',X0_pl',act_t');
+    X0_pl= X0_pl';
     % record fbk for plotting purposes
     pos_fbk_vec(:,i) = fbk(1:3);
 
@@ -47,16 +52,17 @@ for i=1:K
     tau_l(i)= pl_u(1,1);
     tau_r(i)= pl_u(1,2);
 
-    %fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],ctrl.Ts,0,ctrl.ctrl_sys);
+    fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],pl.Ts,1,ctrl_sys_setup_mpc(sys));
 
-    k1 = f_temp(fbk,[pl_u(1,1);pl_u(1,2)]);   % new
-    k2 = f_temp(fbk+ pl.dt/2*k1, [pl_u(1,1);pl_u(1,2)]); % new
-    k3 = f_temp(fbk+ pl.dt/2*k2, [pl_u(1,1);pl_u(1,2)]); % new
-    k4 = f_temp(fbk+ pl.dt/2*k3, [pl_u(1,1);pl_u(1,2)]); % new
-    fbk=full(fbk +pl.dt/6*(k1 +2*k2 +2*k3 +k4)); % new
+    % k1 = full(f_temp(fbk,[pl_u(1,1);pl_u(1,2)]));   % new
+    % k2 = full(f_temp(fbk+ (pl.Ts/2)*k1, [pl_u(1,1);pl_u(1,2)])); % new
+    % k3 = full(f_temp(fbk+ (pl.Ts/2)*k2, [pl_u(1,1);pl_u(1,2)])); % new
+    % k4 = full(f_temp(fbk+ pl.Ts*k3, [pl_u(1,1);pl_u(1,2)])); % new
+    % fbk= fbk +(pl.Ts/6)*(k1 +2*k2 +2*k3 +k4); % new
+
 end
 main_loop_time = toc(main_loop);
 
-ss_error = norm((fbk(1:3)-sim.xf(1:3)),2);
+ss_error = norm((fbk(1:2)-sim.xf(1:2)),2)
 
 average_mpc_time = main_loop_time/(i)

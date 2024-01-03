@@ -7,9 +7,9 @@ function [state_dot] = plant(sys,state,ins)
     % State order X Y Psi V_L V_R  Theta Theta_Dot 
     v_l= state(4);
     v_r= state(5);
-    v= (v_l+v_r/2);
+    v= (v_l+v_r)/2;
     psi= state(3);
-    psi_dot= (v_l-v_r/sys.w);
+    psi_dot= (v_l-v_r)/sys.w;
     theta= state(6);
     theta_dot= state(7);
 

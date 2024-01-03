@@ -86,10 +86,10 @@ end
 
 close(gcf)
 
-video = VideoWriter('exp.avi','Uncompressed AVI');
-
-video = VideoWriter('exp.avi','Motion JPEG AVI');
-video.FrameRate = 5;  % (frames per second) this number depends on the sampling time and the number of frames you have
-open(video)
-writeVideo(video,F)
-close (video)
+% video = VideoWriter('exp.avi','Uncompressed AVI');
+% 
+% video = VideoWriter('exp.avi','Motion JPEG AVI');
+% video.FrameRate = 5;  % (frames per second) this number depends on the sampling time and the number of frames you have
+% open(video)
+% writeVideo(video,F)
+% close (video)

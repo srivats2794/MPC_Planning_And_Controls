@@ -1,4 +1,6 @@
 function [pl_solver,pl_args,f] = pl_prob_setup(pl,sim,sys)
+% Function that sets up the planning problem
+
 import casadi.*;
 
 system= ctrl_sys_setup_mpc(sys);
@@ -18,7 +20,7 @@ rhs = [ ((v_l+v_r)/2)*cos(psi); ...
 
 f = Function('f',{states,controls},{rhs});
 U = SX.sym('U',n_controls,pl.N);
-P = SX.sym('P',n_states + 3);
+P = SX.sym('P',n_states + pl.nxo);
 X = SX.sym('X',n_states,(pl.N+1));
 
 obj = 0; % Objective function
@@ -30,28 +32,30 @@ g = [g;st-P(1:n_states)]; % initial condition constraints
 for k = 1:pl.N
     st = X(:,k);  con = U(:,k);
 
-    obj_term1= (st(1:3)-P(n_states+1:n_states+3));
+    obj_term1= (st(1:pl.nxo)-P(n_states+1:n_states+pl.nxo));
     obj_term2= st(6:7);
     obj_term3= con;
-    obj_term4= (1/(st(4)+0.1))+(1/(st(5)+0.1));
+    
+   
     % Calculate objective
 
     obj = obj+obj_term1'*pl.Q*obj_term1+ ...
-        obj_term2'*pl.Q2*obj_term2+ ...
-        obj_term3'*pl.R*obj_term3;...
-        % obj_term4'*pl.Q3*obj_term4;
+          obj_term2'*pl.Q2*obj_term2+ ...
+         +obj_term3'*pl.R*obj_term3;
 
     % RK4 Integration Scheme
     st_next = X(:,k+1);
     k1 = f(st, con);
-    k2 = f(st + pl.dt/2*k1, con);
-    k3 = f(st + pl.dt/2*k2, con);
+    k2 = f(st + (pl.dt/2)*k1, con);
+    k3 = f(st + (pl.dt/2)*k2, con);
     k4 = f(st + pl.dt*k3, con);
-    st_next_RK4=st +pl.dt/6*(k1 +2*k2 +2*k3 +k4);
+    st_next_RK4=st +(pl.dt/6)*(k1 +2*k2 +2*k3 +k4);
     %
 
     g = [g;st_next-st_next_RK4]; % Compute equality constraints
 end
+obj_term_terminal= (st(1:pl.nxo)-P(n_states+1:n_states+pl.nxo)); % Terminal Constraint
+obj= obj+obj_term_terminal'*pl.QE*obj_term_terminal;
 
 % Add constraints for collision avoidance
 for i=1:sim.obs_num

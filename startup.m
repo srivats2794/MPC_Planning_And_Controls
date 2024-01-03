@@ -15,24 +15,26 @@ sys.g= 9.8056;
 
 %% Simulation Parameters 
 sim.x0= [0.75 ; 0.65 ;0; 0; 0;0;0];
-sim.xf= [2; 4.15 ; pi/2; 0; 0;0;0];
+sim.xf= [1.8; 2.75 ; pi/2; 0; 0;0;0];
 sim.obs_num=4; sim.obs_diam = 0.6; 
+% sim.obs_x= [0.9;2;1.4;2.5;];
+% sim.obs_y= [1.5;1.75;2.8;3];
 sim.obs_x= [0.3;0.9;1.5;2.1;];
-sim.obs_y= [2.8;2.8;2.8;2.8];
-sim.tsim=30;
+sim.obs_y= [2;2;2;2];
+sim.tsim=  40;
 sim.x_min= 0;
 sim.x_max= 3;
-sim.y_min=0;
+sim.y_min= 0;
 sim.y_max= 5;
 
 %% Planner Initialization - NMPC Planner
 pl.Ts = 0.1; % Sampling Rate 
 pl.dt = 0.2; % Prediction Interval
-pl.Q  = diag([1;1;0.02]); % Penalty State
+pl.Q  = diag([0.01;0.01]); % Penalty Position Regular
 pl.N  = 100; % Prediction Horizon
-pl.R  = diag([0.5;0.5]); % Penalty Input
-pl.Q2 = diag([0.5;0.5]);
-pl.Q3= 50;
+pl.R  = diag([0.1;0.1]); % Penalty Input
+pl.Q2 = diag([0.5;0.5]); % Penalty Pitch
+pl.QE= diag([1;1]); % Penalty Position Terminal
 pl.v_max = 4.5; % Max Forward Vel
 pl.v_min = -4.5; % Max Backward Vel
 pl.psi_dot_max = 0.785398; % Max AntiClockwise Yawrate
@@ -42,7 +44,13 @@ pl.a_min = -2.9; % Max Decel
 pl.ego_safety_radius= 0.5;
 pl.tau_min= -11.5; % Max Reverse Torque
 pl.tau_max= -pl.tau_min; % Max Forward Torque
+
+pl.nx= 7; % Total number of states
+pl.nu=2; % Total number of inputs
+pl.nxo=2; % Number of states in objective function
+
 [pl_solver,pl_args,f_temp]= pl_prob_setup(pl,sim,sys); % CasADi solver setup
+
 
 % %% Controller Initialization - LMPC Controller
 %ctrl.Ts= 0.1;  % Sampling Rate
@@ -52,7 +60,7 @@ pl.tau_max= -pl.tau_min; % Max Forward Torque
 % ctrl.x_min = [-4.5;-4.5;-0.1;-0.1]; % State lower bounds
 % ctrl.x_max= -ctrl.x_min; % State upper bounds
 % ctrl.N= 50; % Prediction horizon
-% ctrl.Q= diag([10;1;]); % State penalty   
+% ctrl.Q= diag([10;1;]); % State penalty
 % ctrl.R= diag([1;1]); % Input penalty
 % ctrl.controller= ctrl_setup_lqr(sys,ctrl); % Reference model
 % % [ctrl.nx,ctrl.nu]= size(ctrl.sys.B) ; % Number of states and inputs
