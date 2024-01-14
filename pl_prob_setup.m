@@ -14,13 +14,13 @@ import casadi.*;
         ((2*sys.j_psi*sys.r_w*sys.r_w)+ ...
         ((sys.j_w+sys.r_w*sys.r_w*sys.m_w)*sys.w*sys.w));
 
-x = SX.sym('x'); y = SX.sym('y'); psi = SX.sym('psi'); v= SX.sym('v');
-psiDot= SX.sym('psiDot');
-states = [x;y;psi;v;psiDot]; n_states = length(states);
+x = SX.sym('x'); y = SX.sym('y'); psi = SX.sym('psi'); v_L= SX.sym('v_L');
+v_R= SX.sym('v_R');
+states = [x;y;psi;v_L;v_R]; n_states = length(states);
 
 tau_L = SX.sym('tau_L'); tau_R = SX.sym('tau_R');
 controls = [tau_L;tau_R]; n_controls = length(controls);
-rhs = [v*cos(psi);v*sin(psi);psiDot;p4*(tau_L+tau_R);(2*p5/sys.w)*(tau_L-tau_R)]; 
+rhs = [((v_L+v_R)/2)*cos(psi);((v_L+v_R)/2)*sin(psi);((v_L-v_R)/sys.w);(p4+p5)*tau_L+(p4-p5)*tau_R;(p4-p5)*tau_L+(p4+p5)*tau_R]; 
 
 f = Function('f',{states,controls},{rhs}); 
 U = SX.sym('U',n_controls,pl.N); 
@@ -45,7 +45,8 @@ for k = 1:pl.N
     
     g = [g;st_next-st_next_RK4]; % compute constraints % new
 end
-
+obj_term_terminal= (st_next(1:3)-P(6:8)); % Terminal Constraint
+obj= obj+obj_term_terminal'*pl.QE*obj_term_terminal;
 % Add constraints for collision avoidance
 for i=1:sim.obs_num
     for k = 1:pl.N+1   % box constraints due to the map margins
@@ -82,8 +83,8 @@ pl_args.lbx(3:5:5*(pl.N+1),1) = -inf; %state psi lower bound
 pl_args.ubx(3:5:5*(pl.N+1),1) = inf; %state psi upper bound
 pl_args.lbx(4:5:5*(pl.N+1),1) = pl.v_min; %state v lower bound
 pl_args.ubx(4:5:5*(pl.N+1),1) = pl.v_max; %state v upper bound
-pl_args.lbx(5:5:5*(pl.N+1),1) = pl.psi_dot_min; %state psiDot lower bound
-pl_args.ubx(5:5:5*(pl.N+1),1) = pl.psi_dot_max; %state psiDot upper bound
+pl_args.lbx(5:5:5*(pl.N+1),1) = pl.v_min; %state psiDot lower bound
+pl_args.ubx(5:5:5*(pl.N+1),1) =  pl.v_max; %state psiDot upper bound
 
 pl_args.lbx(5*(pl.N+1)+1:2:5*(pl.N+1)+2*pl.N,1) = pl.tau_min; %V_L lower bound
 pl_args.ubx(5*(pl.N+1)+1:2:5*(pl.N+1)+2*pl.N,1) = pl.tau_max; %V_L upper bound

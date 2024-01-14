@@ -1,4 +1,4 @@
-function solver = ctrl_prob_setup(lin_sys,ctrl)
+function solver = ctrl_prob_setup_mpc(lin_sys,ctrl)
    
    P = blkdiag( kron(speye(ctrl.N), ctrl.Q), ctrl.Q, kron(speye(ctrl.N), ctrl.R) );
    q = [repmat(-ctrl.Q*zeros(4,1), ctrl.N+1,1); zeros(ctrl.N*ctrl.nu, 1)];

@@ -1,4 +1,4 @@
-function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
+function [ctrl_sys] = ctrl_sys_setup_mpc(sys)
 % This function computes the A and B matrix for the control design
 
     %% Predefining some repeated cluster terms
@@ -11,11 +11,11 @@ function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
     p03= sys.m_p*sys.l;
     p04= sys.m_p*sys.m_p*sys.l*sys.l;
 
-    p1= (-p02*Me)/(p04-p01*Me);
-    p2= p03/(sys.r_w*p04-Me*sys.r_w*p01);
-    p3= (-p04*sys.g)/(Me*p01-p04);
-    p4= p01/(Me*sys.r_w*p01-p04*sys.r_w);
-    p5= (sys.w*sys.w*sys.r_w)/ ...
+    ctrl_sys.p1= (-p02*Me)/(p04-p01*Me);
+    ctrl_sys.p2= p03/(sys.r_w*p04-Me*sys.r_w*p01);
+    ctrl_sys.p3= (-p04*sys.g)/(Me*p01-p04);
+    ctrl_sys.p4= p01/(Me*sys.r_w*p01-p04*sys.r_w);
+    ctrl_sys.p5= (sys.w*sys.w*sys.r_w)/ ...
         ((2*sys.j_psi*sys.r_w*sys.r_w)+ ...
         ((sys.j_w+sys.r_w*sys.r_w*sys.m_w)*sys.w*sys.w));
     
@@ -25,15 +25,15 @@ function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
     
     %% System matrices continuous time
 
-    A= [0 0 p3 0 ;
-        0 0 p3 0;
-        0 0 1  0;
-        0 0 p1 0];
+    A= [0 0 ctrl_sys.p3 0 ;
+        0 0 ctrl_sys.p3 0;
+        0 0 0  1;
+        0 0 ctrl_sys.p1 0];
 
-    B= [p4+p5 p4-p5;
-        p4-p5 p4+p5;
+    B= [ctrl_sys.p4+ctrl_sys.p5 ctrl_sys.p4-ctrl_sys.p5;
+        ctrl_sys.p4-ctrl_sys.p5 ctrl_sys.p4+ctrl_sys.p5;
           0     0;
-         p2    p2;];
+         ctrl_sys.p2    ctrl_sys.p2;];
 
     C= eye(4);
 
@@ -41,11 +41,16 @@ function [ctrl_sys] = ctrl_sys_setup_mpc(sys,ctrl)
     
     %% Discretization
 
-    sys= ss(A,B,C,D);
-    sys_d= c2d(sys,ctrl.Ts);
-    ctrl_sys.A= sys_d.A;
-    ctrl_sys.B= sys_d.B;
-    ctrl_sys.Ac= A;
-    ctrl_sys.Bc= B;
+    ctrl_sys.A = A;
+    ctrl_sys.B = B;
+    ctrl_sys.C = C;
+    ctrl_sys.D = D;
+    
+    ctrl_sys.A_th=     [0 1
+                       ctrl_sys.p1 0];
+    ctrl_sys.B_th=     [0 0;
+                        ctrl_sys.p2 ctrl_sys.p2];
+    ctrl_sys.C_th= eye(2);
+    ctrl_sys.D_th= zeros(2,2);
     
 end

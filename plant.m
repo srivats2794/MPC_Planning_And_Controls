@@ -4,10 +4,12 @@ function [state_dot] = plant(sys,state,ins)
     tau_l= ins(1);
     tau_r= ins(2);
     
-    % State order X Y Psi v Psi_Dot Theta Theta_Dot 
-    v= state(4);
+    % State order X Y Psi V_L V_R  Theta Theta_Dot 
+    v_l= state(4);
+    v_r= state(5);
+    v= (v_l+v_r)/2;
     psi= state(3);
-    psi_dot= state(5);
+    psi_dot= (v_l-v_r)/sys.w;
     theta= state(6);
     theta_dot= state(7);
 
@@ -39,6 +41,8 @@ function [state_dot] = plant(sys,state,ins)
     
     psi_ddot= psi_ddot_const*psi_ddot_var;
 
-    state_dot= [v*cos(psi);v*sin(psi);psi_dot;v_dot;psi_ddot;theta_dot;theta_ddot];
-end
+    v_l_dot= v_dot+(sys.w/2)*psi_ddot;
+    v_r_dot= v_dot-(sys.w/2)*psi_ddot;
 
+    state_dot= [v*cos(psi);v*sin(psi);psi_dot;v_l_dot;v_r_dot;theta_dot;theta_ddot];
+end

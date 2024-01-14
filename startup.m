@@ -14,11 +14,11 @@ sys.j_psi= 0.576;                           % Base yaw moment of inertia
 sys.g= 9.8056;
 
 %% Simulation Parameters 
-sim.x0= [2.4 ; 0.65 ; pi/2; 0; 0;0;0];
-sim.xf= [2.4; 4.15 ; pi/2; 0; 0;0;0];
-sim.obs_num=0; sim.obs_diam = 0.6; 
-sim.obs_x= [0.40+0.75;0.30+0.75;0.35+2;0.35+1.5;];
-sim.obs_y= [2.2;3.2;2.75;1.25];
+sim.x0= [0.75 ; 0.65 ;0; 0; 0;0;0];
+sim.xf= [1.8; 3.25 ; pi/2; 0; 0;0;0];
+sim.obs_num=4; sim.obs_diam = 0.6; 
+sim.obs_x= [0.3;0.9;1.5;2.1;];
+sim.obs_y= [1.5;1.5;1.5;1.5];
 sim.tsim=30;
 sim.x_min= 0.25;
 sim.x_max= 2.75;
@@ -28,9 +28,10 @@ sim.y_max= 4.25;
 %% Planner Initialization - NMPC Planner
 pl.Ts = 0.1; % Sampling Rate 
 pl.dt = 0.1; % Prediction Interval
-pl.Q  = diag([0.1;0.1;0.02]); % Penalty State
+pl.Q  = diag([0.01;0.01;0.002]); % Penalty State
 pl.N  = 50; % Prediction Horizon
 pl.R  = diag([0.5;0.5]); % Penalty Input
+pl.QE= diag([2;2;0.1]); % Penalty Position Terminal
 pl.R2 = 0.1;
 pl.v_max = 4.5; % Max Forward Vel
 pl.v_min = -4.5; % Max Backward Vel
@@ -44,7 +45,7 @@ pl.tau_max= -pl.tau_min; % Max Forward Torque
 [pl_solver,pl_args,f_temp]= pl_prob_setup(pl,sim,sys); % CasADi solver setup
 
 %% Controller Initialization - LMPC Controller
-ctrl.Ts= 0.1;  % Sampling Rate
+ctrl.Ts= 0.001;  % Sampling Rate
 ctrl.tau_min= -11.5; % Max Reverse Torque
 ctrl.tau_max= -ctrl.tau_min; % Max Forward Torque
 % State order -> X_L,X_R,theta,thetaDot
@@ -53,11 +54,18 @@ ctrl.x_max= -ctrl.x_min; % State upper bounds
 ctrl.N= 50; % Prediction horizon
 ctrl.Q= diag([10;1;]); % State penalty   
 ctrl.R= diag([1;1]); % Input penalty
-ctrl.controller= ctrl_setup_lqr(sys,ctrl); % Reference model
+%ctrl.controller= ctrl_setup_lqr(sys,ctrl); % Reference model
 % [ctrl.nx,ctrl.nu]= size(ctrl.sys.B) ; % Number of states and inputs
 % ctrl.solver= ctrl_prob_setup(ctrl.sys,ctrl); % OSQP solver setup
 % ctrl.lookahead = 1; % Number of steps to look ahead in planned trajectory
-ctrl.ctrl_sys= ctrl_sys_setup_mpc(sys,ctrl);
+ctrl.ctrl_sys= ctrl_sys_setup_mpc(sys);
+[ctrl.ctrl_sys.Ad_th,ctrl.ctrl_sys.Bd_th,~,~] = ...
+   ssdata(c2d(ss(ctrl.ctrl_sys.A_th,ctrl.ctrl_sys.B_th,ctrl.ctrl_sys.C_th, ...
+   ctrl.ctrl_sys.D_th),ctrl.Ts));
+[ctrl.ctrl_sys.Ad,ctrl.ctrl_sys.Bd,~,~] = ...
+   ssdata(c2d(ss(ctrl.ctrl_sys.A,ctrl.ctrl_sys.B,ctrl.ctrl_sys.C, ...
+   ctrl.ctrl_sys.D),ctrl.Ts));
+[~,ctrl.K,~] = idare(ctrl.ctrl_sys.Ad_th,ctrl.ctrl_sys.B_th,ctrl.Q,ctrl.R,[],[]);
 %% Viz Setup - For simulation graphics visualization
 viz.w= sys.w;
 viz.l= sys.r_w*2+0.02;
