@@ -52,12 +52,9 @@ ctrl.tau_max= -ctrl.tau_min; % Max Forward Torque
 ctrl.x_min = [-4.5;-4.5;-0.1;-0.1]; % State lower bounds
 ctrl.x_max= -ctrl.x_min; % State upper bounds
 ctrl.N= 50; % Prediction horizon
-ctrl.Q= diag([10;1;]); % State penalty   
-ctrl.R= diag([1;1]); % Input penalty
-%ctrl.controller= ctrl_setup_lqr(sys,ctrl); % Reference model
-% [ctrl.nx,ctrl.nu]= size(ctrl.sys.B) ; % Number of states and inputs
-% ctrl.solver= ctrl_prob_setup(ctrl.sys,ctrl); % OSQP solver setup
-% ctrl.lookahead = 1; % Number of steps to look ahead in planned trajectory
+ctrl.Q= diag([0.001;0.001;1;2]); % State penalty   
+ctrl.R= diag([0.5;0.5]); % Input penalty
+
 ctrl.ctrl_sys= ctrl_sys_setup_mpc(sys);
 [ctrl.ctrl_sys.Ad_th,ctrl.ctrl_sys.Bd_th,~,~] = ...
    ssdata(c2d(ss(ctrl.ctrl_sys.A_th,ctrl.ctrl_sys.B_th,ctrl.ctrl_sys.C_th, ...
@@ -65,7 +62,11 @@ ctrl.ctrl_sys= ctrl_sys_setup_mpc(sys);
 [ctrl.ctrl_sys.Ad,ctrl.ctrl_sys.Bd,~,~] = ...
    ssdata(c2d(ss(ctrl.ctrl_sys.A,ctrl.ctrl_sys.B,ctrl.ctrl_sys.C, ...
    ctrl.ctrl_sys.D),ctrl.Ts));
-[~,ctrl.K,~] = idare(ctrl.ctrl_sys.Ad_th,ctrl.ctrl_sys.B_th,ctrl.Q,ctrl.R,[],[]);
+% [~,ctrl.K,~] = idare(ctrl.ctrl_sys.Ad,ctrl.ctrl_sys.Bd,ctrl.Q,ctrl.R,[],[]);
+
+[ctrl.nx,ctrl.nu]= size(ctrl.ctrl_sys.Bd) ; % Number of states and inputs
+ctrl.solver= ctrl_prob_setup_mpc(ctrl.ctrl_sys,ctrl); % OSQP solver setup
+% ctrl.lookahead = 1; % Number of steps to look ahead in planned trajectory
 %% Viz Setup - For simulation graphics visualization
 viz.w= sys.w;
 viz.l= sys.r_w*2+0.02;

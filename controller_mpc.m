@@ -1,10 +1,10 @@
-function [tau_l,tau_r,prediction] = controller_mpc(ctrl,reference,feedback)
+function [tau_l,tau_r,prediction] = controller_mpc(ctrl,st_ref,feedback,in_ref)
 % This function updates the conic problem setup by OSQP and computes inputs
 
             %% Transforming measurement to controller states
             % Plant States -> X Y psi V psiDot theta thetaDot
             % Controller States -> X_L,X_R, theta, thetaDot
-            x0= feedback;
+            x0= feedback(4:7);
             
             %% State part of the objective function
             q_new = [reshape((ctrl.Q*reference),ctrl.nx*(ctrl.N+1),1); zeros(ctrl.N*ctrl.nu, 1)];

@@ -2,8 +2,8 @@ function solver = ctrl_prob_setup_mpc(lin_sys,ctrl)
    
    P = blkdiag( kron(speye(ctrl.N), ctrl.Q), ctrl.Q, kron(speye(ctrl.N), ctrl.R) );
    q = [repmat(-ctrl.Q*zeros(4,1), ctrl.N+1,1); zeros(ctrl.N*ctrl.nu, 1)];
-   Ax = kron(speye(ctrl.N+1), -speye(ctrl.nx)) + kron(sparse(diag(ones(ctrl.N, 1), -1)), lin_sys.A);
-   Bu = kron([sparse(1, ctrl.N); speye(ctrl.N)], lin_sys.B);
+   Ax = kron(speye(ctrl.N+1), -speye(ctrl.nx)) + kron(sparse(diag(ones(ctrl.N, 1), -1)), lin_sys.Ad);
+   Bu = kron([sparse(1, ctrl.N); speye(ctrl.N)], lin_sys.Bd);
    Aeq = [Ax, Bu];
    leq = [-zeros(4,1); zeros(ctrl.N*ctrl.nx, 1)];
    ueq = leq;

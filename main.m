@@ -1,5 +1,5 @@
-fbk=sim.x0(1:5);
-
+fbk=sim.x0;
+fbk_vec(:,1)=fbk;
 % two inputs for robot at planner level
 u0_pl = zeros(pl.N,2);       
 % initialization of the kinematic states decision variables
@@ -10,7 +10,7 @@ u_ref=[0;0];
 pl_rec = [];
 ctrl_ref=[];
 
-K= floor(sim.tsim/pl.Ts);
+K= floor(sim.tsim/ctrl.Ts);
 
 % Ratio between planning and controls execution cycles
 pl_exec_freq= round(pl.Ts/ctrl.Ts);
@@ -26,7 +26,7 @@ for i=1:K
     end
     norm((fbk(1:3)-sim.xf(1:3)),2)
     t(i) = (i-1)*ctrl.Ts;
-    %if(rem(i,pl_exec_freq)==0) %% Planning Cycle
+    if(rem(i,pl_exec_freq)==1) %% Planning Cycle
         main_loop = tic;
         pl_args.p   = [fbk(1:5);sim.xf(1:3)];
         pl_args.x0  = [reshape(X0_pl',5*(pl.N+1),1);reshape(u0_pl',2*pl.N,1)];
@@ -37,7 +37,7 @@ for i=1:K
         pl_u = reshape(full(pl_sol.x(5*(pl.N+1)+1:end))',2,pl.N)'; 
         % get solution TRAJECTORY for plotting purposes
         pl_st= reshape(full(pl_sol.x(1:5*(pl.N+1)))',5,pl.N+1)'; 
-        pl_rec(:,1:3,i)= pl_st(:,1:3);
+        pl_rec(:,1:3,j)= pl_st(:,1:3);
         % the inputs solved by planner are the references for the
         % controller
         % ctrl_ref= (full(pl_u))';
@@ -52,15 +52,16 @@ for i=1:K
         
         % record fbk for plotting purposes
         pos_fbk_vec(:,j) = fbk(1:3);
-        j=j+1;
+        
         % A flag that marks that a planner cycle has just gotten done
         pl_status=1; 
         % Store the planner trajectory as a smooth C2 spline to be used by
         % controller
         %pl_ref_curve= makima(t_pl,ctrl_ref); % TODO: Try PCHIP instead
-        main_loop_time = toc(main_loop);
-    %end
-    
+        main_loop_time(j) = toc(main_loop);
+        j=j+1;
+    end
+ 
     % % Whenever planner status goes to 1, our start
     % if pl_status==1
     %     count=0;
@@ -82,24 +83,21 @@ for i=1:K
     
     % Store dynamic states for plotting purposes    
     
-    % dyn_fbk_vec(:,i) = [fbk(4); ...
-    %                       fbk(5);
-    %                       fbk(6);
-    %                       fbk(7);];
-    %ctrl_ref_curr= repmat(ctrl_ref,1,ctrl.N+1);
+    
     % Solve the control problem
     % 
-    % tau_vec= [pl_u(1,1);pl_u(1,2)]+ctrl.controller.K*[fbk(6);fbk(7)];
-    % tau_l(i)= tau_vec(1);
-    % tau_r(i)= tau_vec(2);
+    tau_vec= [pl_u(1,1);pl_u(1,2)]-ctrl.K*[fbk(4:7)];
+    tau_l(i)= tau_vec(1);
+    tau_r(i)= tau_vec(2);
     
-    %fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],ctrl.Ts,1,ctrl.ctrl_sys);
+    fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],ctrl.Ts,1,ctrl.ctrl_sys);
+    fbk_vec(:,i+1)=fbk;
     % 
-    k1 = f_temp(fbk,[pl_u(1,1);pl_u(1,2)]);   % new 
-    k2 = f_temp(fbk+ pl.Ts/2*k1, [pl_u(1,1);pl_u(1,2)]); % new
-    k3 = f_temp(fbk+ pl.Ts/2*k2, [pl_u(1,1);pl_u(1,2)]); % new
-    k4 = f_temp(fbk+ pl.Ts/2*k3, [pl_u(1,1);pl_u(1,2)]); % new
-    fbk=full(fbk +pl.Ts/6*(k1 +2*k2 +2*k3 +k4)); % new    
+    % k1 = f_temp(fbk,[pl_u(1,1);pl_u(1,2)]);   % new 
+    % k2 = f_temp(fbk+ pl.Ts/2*k1, [pl_u(1,1);pl_u(1,2)]); % new
+    % k3 = f_temp(fbk+ pl.Ts/2*k2, [pl_u(1,1);pl_u(1,2)]); % new
+    % k4 = f_temp(fbk+ pl.Ts/2*k3, [pl_u(1,1);pl_u(1,2)]); % new
+    % fbk=full(fbk +pl.Ts/6*(k1 +2*k2 +2*k3 +k4)); % new    
 end
 
 
