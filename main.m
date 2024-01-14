@@ -52,14 +52,7 @@ for i=1:K
     tau_l(i)= pl_u(1,1);
     tau_r(i)= pl_u(1,2);
 
-    fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],pl.Ts,1,ctrl_sys_setup_mpc(sys));
-
-    % k1 = full(f_temp(fbk,[pl_u(1,1);pl_u(1,2)]));   % new
-    % k2 = full(f_temp(fbk+ (pl.Ts/2)*k1, [pl_u(1,1);pl_u(1,2)])); % new
-    % k3 = full(f_temp(fbk+ (pl.Ts/2)*k2, [pl_u(1,1);pl_u(1,2)])); % new
-    % k4 = full(f_temp(fbk+ pl.Ts*k3, [pl_u(1,1);pl_u(1,2)])); % new
-    % fbk= fbk +(pl.Ts/6)*(k1 +2*k2 +2*k3 +k4); % new
-
+    fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],pl.Ts,0,ctrl_sys_setup_mpc(sys));
 end
 main_loop_time = toc(main_loop);
 
