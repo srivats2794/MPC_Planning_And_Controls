@@ -28,14 +28,14 @@ sim.y_min= 0;
 sim.y_max= 5;
 
 %% Planner Initialization - NMPC Planner
-pl.choice = 2; % 1 Kinematic Diff Drive, 2 Dynamic Diff Drive, 3 Dynamic Self Balancing
+pl.choice = 1; % 1 Kinematic Diff Drive, 2 Dynamic Diff Drive, 3 Dynamic Self Balancing
 
 pl.Ts = 0.1; % Sampling Rate 
 pl.dt = 0.1; % Prediction Interval
 
 if pl.choice == 1
     pl.Q  = diag([0.01;0.01;0.002]); % Penalty Position Regular
-    pl.N  = 20; % Prediction Horizon
+    pl.N  = 50; % Prediction Horizon
     pl.R  = diag([0.1;0.1]); % Penalty Input
     pl.QE= diag([1;1]); % Penalty Position Terminal
     pl.v_max = 4.5; % Max Forward Vel
@@ -106,9 +106,9 @@ if pl.choice==1
     sys_c= ss(ctrl.ctrl_sys.A,ctrl.ctrl_sys.B,ctrl.ctrl_sys.C,ctrl.ctrl_sys.D);
     [ctrl.ctrl_sys.Ad,ctrl.ctrl_sys.Bd,~,~]=ssdata(c2d(sys_c,ctrl.Ts));
     clearvars sys_c
-    ctrl.Q= diag([1;1;2;2]);
-    ctrl.R= diag([5;5]);
-    ctrl.N=100;
+    ctrl.Q= diag(1*[0.1;0.1;10;7.5]);
+    ctrl.R= diag([0.1;0.1]);
+    ctrl.N=50;
     ctrl.x_max= [pl.v_max;pl.v_max;0.1;0.1];
     ctrl.x_min= [pl.v_min;pl.v_min;-0.1;-0.1];
     ctrl.solver= ctrl_prob_setup_mpc(ctrl.ctrl_sys,ctrl);

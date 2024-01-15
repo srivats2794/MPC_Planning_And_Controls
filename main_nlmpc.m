@@ -83,7 +83,7 @@ for j=1:K
     [tau_l(i),tau_r(i),dyn_fbk_pred(:,i+1)]= controller_mpc(ctrl,ctrl_ref_curr,fbk);
 
     fbk= propagate_plant(sys,fbk,[tau_l(i);tau_r(i)],pl.Ts,1,ctrl_sys_setup_mpc(sys));
-    
+    fbk_vec(:,j+1) = fbk;
 end
 
 

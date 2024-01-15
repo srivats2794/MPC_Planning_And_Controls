@@ -7,7 +7,7 @@ function [tau_l,tau_r,prediction] = controller_mpc(ctrl,reference,feedback)
             x0= feedback(4:end);
             
             %% State part of the objective function
-            q_new = [reshape((ctrl.Q*reference),ctrl.nx*(ctrl.N+1),1); zeros(ctrl.N*ctrl.nu, 1)];
+            q_new = [reshape((-ctrl.Q*reference),ctrl.nx*(ctrl.N+1),1); zeros(ctrl.N*ctrl.nu, 1)];
             
             %% Equality constraints
             leq = [-x0; zeros(ctrl.N*ctrl.nx, 1)];
