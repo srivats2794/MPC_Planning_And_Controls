@@ -3,8 +3,8 @@ function [tau_l,tau_r,prediction] = controller_mpc(ctrl,reference,feedback)
 
             %% Transforming measurement to controller states
             
-            % Controller States -> X_L,X_R, theta, thetaDot
-            x0= feedback(4:end);
+            % Controller States -> X_L,X_R, X_L_Dot, X_R_Dot theta, thetaDot
+            x0= feedback;
             
             %% State part of the objective function
             q_new = [reshape((-ctrl.Q*reference),ctrl.nx*(ctrl.N+1),1); zeros(ctrl.N*ctrl.nu, 1)];
